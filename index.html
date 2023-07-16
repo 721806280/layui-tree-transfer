@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <title>树形穿梭框</title>
+    <link href="layui/css/layui.css" rel="stylesheet">
+    <link href="layui-exts/treeTransfer/tree-transfer.css" rel="stylesheet">
+</head>
+<body>
+<div class="layui-btn-container">
+    <button class="layui-btn layui-btn-sm" onclick="getData()" type="button">获取数据</button>
+    <button class="layui-btn layui-btn-sm" onclick="reload()" type="button">重载实例</button>
+</div>
+<div id="transfer"></div>
+<script src="layui/layui.js"></script>
+<script src="layui-exts/treeTransfer/tree-transfer.js"></script>
+<script>
+    var data = [{
+        id: "000",
+        title: "总部",
+        parentId: null,
+        // 节点是否初始展开，默认 false
+        spread: true,
+        children: [{
+            id: "000100",
+            title: "科技部",
+            parentId: "000"
+        }, {
+            id: "000101",
+            title: "行政部",
+            parentId: "000"
+        }]
+    }, {
+        id: "100",
+        title: "北京分公司",
+        parentId: null
+    }, {
+        id: "101",
+        title: "上海分公司",
+        parentId: null
+    }];
+
+    var treeTransfer;
+    layui.use('treeTransfer', function () {
+        treeTransfer = layui.treeTransfer.render({
+            id: 'transfer',
+            elem: '#transfer',
+            // 全部数据
+            data: data,
+            // 已选择数据，默认在右边
+            value: [{
+                id: "101",
+                title: "上海分公司",
+                parentId: null
+            }],
+            title: ['列表一', '列表二'],
+            // 是否展示关键词搜索
+            showSearch: true,
+            // 初始化的所有菜单在 右侧 ,默认 左侧
+            isRight: false,
+        });
+    });
+
+    function reload() {
+        treeTransfer.reload();
+    }
+
+    function getData() {
+        console.log(treeTransfer.getData());
+    }
+</script>
+</body>
+
+</html>

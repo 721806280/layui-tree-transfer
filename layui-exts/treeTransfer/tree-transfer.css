@@ -1,0 +1,9 @@
+.layui-transfer-box .layui-form-checkbox {
+    width: auto;
+}
+
+.layui-tree-entry {
+    position: static;
+    height: auto;
+    display: inline-block;
+}

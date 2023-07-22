@@ -35,8 +35,8 @@ layui.define(['jquery', 'form', 'tree'], function (exports) {
             return {
                 config: options,
                 // 重置实例
-                reload: function (options) {
-                    that.reload.call(that, options);
+                reload: function () {
+                    that.reload(true);
                 },
                 // 获取数据
                 getData: function () {
@@ -49,8 +49,7 @@ layui.define(['jquery', 'form', 'tree'], function (exports) {
             let that = this;
             options = $.extend({
                 index: ++treeTransfer.index,
-                elem: '#tree-transfer',         // 容器
-                parentId: null,                 // 父ID
+                id: 'tree-transfer',            // 容器
                 data: [],                       // 源数据
                 value: [],                      // 已选数据
                 title: [],                      // 左右标题
@@ -60,7 +59,7 @@ layui.define(['jquery', 'form', 'tree'], function (exports) {
 
             that.config = options;
             that.index = options.index;
-            that.elem = options.elem;
+            that.elem = "#" + options.id;
             that.allTree = options.data;
             that.initLeftTree = options.leftTree || [];
             that.initRightTree = options.rightTree || [];
@@ -90,12 +89,12 @@ layui.define(['jquery', 'form', 'tree'], function (exports) {
 
     // 渲染树形穿梭框
     Class.prototype.render = function () {
-        let that = this, options = that.config, $elem = $(options.elem);
+        let that = this, options = that.config, $elem = $(that.elem);
         // 清空容器
         $elem.empty();
 
         // 创建外层容器
-        $elem.append('<div class="layui-transfer layui-form layui-border-box" lay-filter="' + options.elem + '"></div>');
+        $elem.append('<div class="layui-transfer layui-form layui-border-box" lay-filter="' + that.elem + '"></div>');
 
         // 创建左右两个盒子
         $elem.find('.layui-transfer').append('<div class="layui-transfer-box"></div>');
@@ -135,7 +134,7 @@ layui.define(['jquery', 'form', 'tree'], function (exports) {
         var that = this, options = that.config;
 
         // 获取容器元素
-        var $ele = $(options.elem).find('.layui-transfer-box').eq(index).html('');
+        var $ele = $(that.elem).find('.layui-transfer-box').eq(index).html('');
 
         // 获取标题和数据
         var title = options.title[index];
@@ -147,7 +146,7 @@ layui.define(['jquery', 'form', 'tree'], function (exports) {
         // 添加标题和复选框
         if (title) {
             $ele.append('<div class="layui-transfer-header"></div>');
-            $ele.find('.layui-transfer-header').append('<input type="checkbox" name="transferCheckbox' + index + options.elem + '" lay-filter="transferCheckbox' + index + options.elem + '" lay-skin="primary" title="' + title + '">');
+            $ele.find('.layui-transfer-header').append('<input type="checkbox" name="transferCheckbox' + index + that.elem + '" lay-filter="transferCheckbox' + index + that.elem + '" lay-skin="primary" title="' + title + '">');
         }
 
         if (showSearch) {
@@ -167,7 +166,7 @@ layui.define(['jquery', 'form', 'tree'], function (exports) {
             data: data,
             showCheckbox: true, // 是否显示复选框
             showLine: false,
-            id: options.elem + '-' + index,
+            id: that.elem + '-' + index,
             // 复选框选中事件回调
             oncheck: function (obj) {
                 var parentId = this.id.split('-')[0];
@@ -203,11 +202,10 @@ layui.define(['jquery', 'form', 'tree'], function (exports) {
 
     // 全选 checkBox 选中状态筛选
     Class.prototype.controlCheckAll = function (checkedVal, index) {
-        var options = this.config;
         // 检查是否全部选中
         var isAllChecked = checkAllSelected(index === 0 ? (this.tempLeftTree || this.leftTree) : (this.tempRightTree || this.rightTree), checkedVal);
         // 更新表单值
-        form.val('transferCheckbox' + index + options.elem, isAllChecked);
+        form.val('transferCheckbox' + index + this.elem, isAllChecked);
 
         /**
          * 检查是否全部选中
@@ -223,7 +221,7 @@ layui.define(['jquery', 'form', 'tree'], function (exports) {
 
             // 比对第二层，如果有子节点且长度不一致则返回 false
             for (let i = 0; i < allVal.length; i++) {
-                if (checkedVal[i].children && checkedVal[i].children.length !== allVal[i].children.length) {
+                if (checkedVal[i].children && allVal[i].children && checkedVal[i].children.length !== allVal[i].children.length) {
                     return false;
                 }
             }
@@ -237,7 +235,7 @@ layui.define(['jquery', 'form', 'tree'], function (exports) {
         // 将当前上下文保存到 that 变量中，以便在内部函数中引用
         var that = this, options = that.config;
         // 绑定左右侧搜索框的键盘输入事件
-        $(options.elem).find('.leftSearch, .rightSearch').keyup(function () {
+        $(that.elem).find('.leftSearch, .rightSearch').keyup(function () {
             // 获取搜索框的值并去除首尾空格
             var val = $(this).val().trim();
             // 调用 keywordSearch 方法进行关键词搜索，
@@ -306,7 +304,7 @@ layui.define(['jquery', 'form', 'tree'], function (exports) {
 
         function transferCheckbox(index) {
             // 监听复选框改变事件
-            form.on('checkbox(transferCheckbox' + index + options.elem + ')', function (data) {
+            form.on('checkbox(transferCheckbox' + index + that.elem + ')', function (data) {
                 if (data.elem.checked) { // 复选框被选中
                     // 获取对应的树形数据
                     var treeData = index === 0 ? (that.tempLeftTree || that.leftTree) : (that.tempRightTree || that.rightTree);
@@ -321,9 +319,9 @@ layui.define(['jquery', 'form', 'tree'], function (exports) {
                     tree.setChecked(that.elem + '-' + index, treeArr);
                 } else { // 复选框未选中
                     // 重新加载对应的树形组件
-                    tree.reload(options.elem + '-' + index);
+                    tree.reload(that.elem + '-' + index);
                     // 添加禁用样式至按钮
-                    $(options.elem).find(index === 0 ? '.layui-icon-next' : '.layui-icon-prev').parent().addClass('layui-btn-disabled');
+                    $(that.elem).find(index === 0 ? '.layui-icon-next' : '.layui-icon-prev').parent().addClass('layui-btn-disabled');
                 }
             });
         }
@@ -349,42 +347,47 @@ layui.define(['jquery', 'form', 'tree'], function (exports) {
         // 左箭头按钮点击事件
         $ele.find('.layui-icon-next').parent().click(function () {
             // 获取左侧已选数据
-            var leftChoose = tree.getChecked(options.elem + '-' + 0);
+            var leftChoose = tree.getChecked(that.elem + '-' + 0);
             if (!leftChoose.length) return; // 如果未选择任何数据，则直接返回
 
             // 整理左右数据
             that.leftTree = that.removeChooseTree(that.leftTree, leftChoose); // 从左侧树形数据中移除选择的节点
             that.rightTree = that.addChooseTree(that.rightTree, leftChoose); // 将选择的节点添加到右侧树形数据中
 
-            that.reload(that.leftTree, that.rightTree); // 重新渲染左右树形组件
+            that.reload(); // 重新渲染左右树形组件
         });
 
         // 右箭头按钮点击事件
         $ele.find('.layui-icon-prev').parent().click(function () {
             // 获取右侧已选数据
-            var rightChoose = tree.getChecked(options.elem + '-' + 1);
+            var rightChoose = tree.getChecked(that.elem + '-' + 1);
             if (!rightChoose.length) return; // 如果未选择任何数据，则直接返回
 
             // 整理左右数据
             that.leftTree = that.addChooseTree(that.leftTree, rightChoose); // 将选择的节点添加到左侧树形数据中
             that.rightTree = that.removeChooseTree(that.rightTree, rightChoose); // 从右侧树形数据中移除选择的节点
 
-            that.reload(that.leftTree, that.rightTree); // 重新渲染左右树形组件
+            that.reload(); // 重新渲染左右树形组件
         });
     };
 
     // 重载树形穿梭框
-    Class.prototype.reload = function (leftTree, rightTree) {
-        let that = this, options = that.config, $elem = $(options.elem);
+    Class.prototype.reload = function (reset) {
+        let that = this, options = that.config, $elem = $(that.elem);
+
+        if (reset) {
+            that.leftTree = deepClone(that.initLeftTree);
+            that.rightTree = deepClone(that.initRightTree);
+        }
 
         // 重新加载左侧树形组件
-        tree.reload(options.elem + '-' + 0, {
-            data: leftTree || that.initLeftTree,
+        tree.reload(that.elem + '-' + 0, {
+            data: that.leftTree,
         });
 
         // 重新加载右侧树形组件
-        tree.reload(options.elem + '-' + 1, {
-            data: rightTree || that.initRightTree,
+        tree.reload(that.elem + '-' + 1, {
+            data: that.rightTree,
         });
 
         // 禁用箭头按钮
@@ -392,10 +395,10 @@ layui.define(['jquery', 'form', 'tree'], function (exports) {
 
         // 全选按钮置为 false
         var setValues = {
-            ['transferCheckbox0' + options.elem]: false,
-            ['transferCheckbox1' + options.elem]: false,
+            ['transferCheckbox0' + that.elem]: false,
+            ['transferCheckbox1' + that.elem]: false,
         };
-        form.val(options.elem, setValues);
+        form.val(that.elem, setValues);
 
         // 清除临时树形数据
         that.tempLeftTree = null;
@@ -506,15 +509,12 @@ layui.define(['jquery', 'form', 'tree'], function (exports) {
 
     //获得选中的数据（右侧面板）
     treeTransfer.getData = function (id) {
-        var that = thisModule.getThis(id);
-        return that.getData();
+        return thisModule.getThis(id).getData();
     };
 
     //重载实例
-    treeTransfer.reload = function (id, config) {
-        var that = thisModule.getThis(id);
-        that.reload(config);
-        return thisModule.call(that);
+    treeTransfer.reload = function (id) {
+        return thisModule.getThis(id).reload(true);
     };
 
     //核心入口
@@ -522,7 +522,6 @@ layui.define(['jquery', 'form', 'tree'], function (exports) {
         var inst = new Class(options);
         if (treeTransfer.index === 1)
             console.log("欢迎使用树形穿梭框组件v" + treeTransfer.version);
-
         inst.render(options);
         return thisModule.call(inst);
     };

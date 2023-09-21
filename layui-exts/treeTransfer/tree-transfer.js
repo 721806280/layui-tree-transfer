@@ -455,36 +455,28 @@ layui.define(['jquery', 'form', 'tree'], function (exports) {
 
     // 添加树节点
     Class.prototype.addChooseTree = function (origin, choose) {
-        // 创建一个映射表，用于记录已存在的一级节点的索引位置
-        var idMap = {};
+        // 创建字典存储原始数据
+        var dict = {};
+        for (var i = 0; i < origin.length; i++) {
+            dict[origin[i].id] = origin[i];
+        }
 
-        // 遍历原始树，将已存在的一级节点的id及其索引位置存储到映射表中
-        $.each(origin, function (i, data) {
-            if (!data.children) return;
-            idMap[data.id] = i;
-        });
-
-        // 遍历选择节点列表
-        $.each(choose, function (i, data) {
+        // 遍历 choose 数组
+        for (var j = 0; j < choose.length; j++) {
+            var data = choose[j];
             if (data.spreadTemp) {
-                // 如果选择节点有 spreadTemp 属性，则将 spread 设置为 false（展开状态）
                 data.spread = false;
             }
-
-            if (idMap[data.id] !== undefined) {
-                // 如果选择节点在映射表中存在对应的索引位置，表示之前已选择过该节点
-                var index = idMap[data.id];
-
-                if (!data.children) return;
-                // 将选择节点的子节点逆序遍历，并依次插入到原始树对应的一级节点的 children 数组的开头
-                $.each(data.children.reverse(), function (m, dataChild) {
-                    origin[index].children.unshift(dataChild);
-                });
+            if (dict.hasOwnProperty(data.id)) {
+                // 原始数据存在，合并子节点
+                if (data.children) {
+                    dict[data.id].children = data.children.concat(dict[data.id].children || []);
+                }
             } else {
-                // 如果选择节点在映射表中不存在对应的索引位置，表示之前没有选择过该节点，则将节点直接插入到原始树的开头
+                // 原始数据不存在，直接插入
                 origin.unshift(data);
             }
-        });
+        }
 
         return origin;
     };
